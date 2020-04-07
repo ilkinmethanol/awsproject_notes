@@ -1,0 +1,840 @@
+openapi: "3.0.1"
+info:
+  title: "Device Registry API"
+  version: "0.1.0"
+servers:
+  - url: "https://deviceregistry.mccs.delaval.cloud"
+paths:
+  /devices:
+    get:
+      summary: 'Get device/devices information by query parameters.'
+      tags:
+      - "deviceinformation"
+      description: "Parameters' combinations that are allowed to search are: (hardwareid) , (serialid and articleno),(farmid), (farmid and type)."
+      parameters:
+        - in: query
+          name: hardwareid
+          schema:
+            type: integer
+        - in: query  
+          name: serialid
+          schema:
+            type: string
+        - in: query
+          name: articleno
+          schema:
+            type: string
+        - in: query
+          name: farmid
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Results of searching specific device information by query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceInformationBySearching'
+        400:
+          description: 'Query parameters are wrong'
+          content:
+            appllication/json:
+              schema:
+                $ref: '#/components/schemas/DeviceQueryParametersWrong'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      tags:
+      - "deviceinformation"
+      summary: 'Register new device.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterNewDevice'
+      
+      responses:
+        200:
+          description: "Registering new device with hardwareid and articleno"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterNewDeviceOk'
+        
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        
+        400:
+          description: "The request was invalid"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterNewDeviceError'
+        409:
+          description: "Resource already exists"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceExists'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /devices/{deviceid}/group:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        description: "Device id for get request"
+    
+    patch:
+      summary: "Move device to thing group identified by farmid or siteid."
+      tags:
+      - "deviceinformation"
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceToGroup'
+      responses:
+        200:
+          description: "Device Provisioned"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToGroupOk'
+        400:
+          description: "Please make sure that provided right details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidedRightDetails'
+          
+        
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+                
+  /devices/{deviceid}:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        description: "Device id for get request"
+    
+    get:
+      summary: "Get device status and metadata."
+      tags:
+      - "deviceinformation"
+      
+      responses:
+        200:
+          description: "Device Status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceStatusMetadata'
+        400:
+          description: "Please make sure that provided right details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidedRightDetails'
+          
+        
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+                
+  /devices/{deviceid}/status:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        
+    get:
+      tags:
+      - "status"
+      summary: 'Get device status info by device id.'
+      
+      responses:
+        200:
+          description: "Device placed to group successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceStatusReceived'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /devices/{deviceid}/desiredstate:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        
+    get:
+      tags:
+      - "desiredstate"
+      summary: "Get desired configuration state of the device."
+      
+      responses:
+        200:
+          description: "Device placed to group successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceDesiredState'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /devices/{deviceid}/events:
+    parameters:
+      - in: path
+        name: deviceid
+        schema: 
+          type: integer
+        required: true
+        description: "Device id"
+    get:
+      tags:
+      - "events"
+      summary: "Get device events."
+      responses:
+        200:
+          description: "Object received"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaltReturnerReceived'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      tags:
+      - "events"
+      summary: "Create event for given device."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StateApplyDataPost'
+      responses:
+        200:
+          description: "Object received"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceEventSuccess'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+ 
+  /devices/{deviceid}/provisionggdevice:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        description: "Device id"
+        
+    post:
+      tags:
+      - "provision"
+      summary: "Provision ggdevice (create gg device and keys)."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostProvisionGGdevice'
+      responses:
+        201:
+          description: "Device provisioned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewProvisionGGdevice'
+                
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+
+        400:
+          description: "Please make sure that provided right details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidedRightDetails'
+                
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /devices/{deviceid}/provisionggcore:
+    parameters:
+      - in: path
+        name: deviceid
+        schema:
+          type: integer
+        required: true
+        description: "Device id"
+        
+    post:
+      tags:
+      - "provision"
+      summary: "Provision ggcore (create core and keys)."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostProvisionGGcore'
+      responses:
+        201:
+          description: "Registering new related device to device"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewProvisionGGcore'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        400:
+          description: "Please make sure that provided right details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidedRightDetails'
+        404:
+          description: "Resoruce not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    get:
+      tags:
+      - "provision"
+      summary: "Provision ggcore (create core and keys)."
+      parameters:
+        - in: query
+          name: otpsecret
+          required: true
+          schema:
+            type: string
+        
+      responses:
+        201:
+          description: "Registering new related device to device"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewProvisionGGcore'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        400:
+          description: "Please make sure that provided right details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidedRightDetails'
+        404:
+          description: "Resoruce not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /devices/{deviceid}/metadata:
+    parameters:
+      - in: path
+        name: deviceid
+        schema: 
+          type: integer
+        required: true
+        description: "Device id"
+    get:
+      tags:
+      - "metadata"
+      summary: "Get device metadata."
+      responses:
+        200:
+          description: "Object received"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceMetadata'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      tags:
+      - "metadata"
+      summary: "Create metadata for given device."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceMetadataNew'
+      responses:
+        200:
+          description: "Object received"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceEventSuccess'
+        401:
+          description: "Unauthorized request, missing API key"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIkeyError'
+        404:
+          description: "Resource not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceNotFound'
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: "apiKey"
+      in: header
+      name: Auth-API-Key
+      
+  schemas:
+    DeviceMetadata:
+      title: "Provides the desired metadata of the device"
+      type: object
+      properties:
+        metadata:
+          type: object
+    
+    DeviceStatusMetadata:
+      title: "Provides the desired status and metadata of the device"
+      type: object
+      properties:
+        status:
+          type: object
+        metadata:
+          type: object
+    
+    DeviceMetadataNew:
+      title: "Provides the desired metadata of the device"
+      type: object
+      properties:
+        metadata_item:
+          type: string
+    DeviceDesiredState:
+      title: "Provides the desired configuration state of the device"
+      type: object
+      properties:
+        thinggroup:
+          type: string
+        thingname:
+          type: string
+    PostProvisionGGdevice:
+      title: "Creating new device and keys, update attributes with group info (farmid, customerid)"
+      type: object
+      properties:
+        hardwareid:
+          type: string
+        articleno:
+          type: string
+        gggroup:
+          type: string #i have to think about that
+    PostProvisionGGcore:
+      title: "Creating new core and keys"
+      type: object
+      properties:
+        otpsecret:
+          type: string
+    NewProvisionGGcore:
+      title: "New provision gg device created"
+      type: object 
+      properties:
+        result:
+          type: string
+          example: "keys.zip"
+    NewProvisionGGdevice:
+      title: "Device provisioned response."
+      type: object 
+      properties:
+        certificatepem:
+          type: string
+          example: "string"
+        privatekey:
+          type: string
+          example: "string"
+        publickey:
+          type: string
+          example: "string"
+    RegisterNewDevice:
+      title: "Creating new device with hardwareid, articleno"
+      type: object
+      properties:
+        hardwareid:
+          type: string
+        articleno:
+          type: string
+    RegisterNewDeviceOk:
+      title: "New device created with this input variables"
+      type: object
+      properties:
+        deviceid:
+          type: string
+        articleno:
+          type: string
+        serialid:
+          type: string
+    RegisterNewDeviceError:
+      title: "The request is invalid while registering new device."
+      type: object
+      properties:
+        error:
+          example:
+            "The request was invalid. Please check values that entered."
+          type: string
+    DeviceToGroup:
+      type: object
+      title: "Place device to new group, update attributes with group info."
+      properties:
+        farmid:
+          type: string
+        siteid:
+          type: string
+    DeviceToGroupOk:
+      type: object
+      title: "Device provisioned"
+      properties:
+        message:
+          type: string
+          example: "Provisioned!"
+        thingid:
+          type: string
+    DeviceInformationBySearching:
+      title: "Getting device information by searching"
+      type: object
+      properties:
+        name:
+          type: string
+        farmid:
+          type: string
+        customerid:
+          type: string
+        status:
+          type: string
+        ggid:
+          type: string
+    DeviceQueryParametersWrong:
+      title: 'Query parameters are wrong'
+      type: object
+      properties:
+        error:
+          type: string
+          example: 'Please provide correct query string parameters. Allowed combinations are: hardwareid OR serialid + articleno OR farmid/farmid + type.'
+    DeviceStatusReceived:
+      title: "Device status exists and received"
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+              deploymentpercentage:
+                type: integer
+              deploymentstatus:
+                type: string
+              connectivity:
+                type: string
+              datetimelastseen:
+                type: string
+    DeviceEventSuccess:
+      title: "Post method was successfull and new event for device created"
+      type: object
+      properties:
+        message:
+          type: string
+          example:
+            "Proper device values posted to device events table"
+    TestPingDataPost:
+      title: "Structure of test.ping post data"
+      type: object
+      properties:
+        success:
+          type: boolean
+        return:
+          type: boolean
+        retcode:
+          type: integer
+        jid:
+          type: string
+        fun:
+          type: string
+        funargs:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    StateApplyDataPost:
+      title: "Structure of state.apply post data"
+      type: object
+      properties:
+        success:
+          type: boolean
+        return:
+          type: object
+          properties:
+            name:
+              type: object
+              properties:
+                name:
+                  type: string
+                changes:
+                  type: object
+                result:
+                  type: boolean
+                comment:
+                  type: string
+                sls:
+                  type: string
+                runnum:
+                  type: integer
+                starttime:
+                  type: string
+                duration:
+                  type: number
+                id:
+                  type: string
+        retcode:
+          type: integer
+        jid:
+          type: string
+        fun:
+          type: string
+        funargs:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    SaltReturnerReceived:
+      title: "Salt return received"
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            testpingresult:
+              $ref: '#/components/schemas/TestPingDataPost'
+            stateapplyresult:
+              $ref: '#/components/schemas/StateApplyDataPost'
+    ResourceExists:
+      title: "Resource with given value already exists"
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Resource with given value already exists"
+    ResourceNotFound:
+      title: "Resource does not exist"
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Requested item(s) not found"
+    ProvidedRightDetails:
+      title: "Please make sure that you provided right details"
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Please make sure that you provided right details"        
+    InternalServerError:
+      title: "Internal server error occurred"
+      type: object
+      properties:
+        error:
+          example: 
+            "Internal Server Error"
+    APIkeyError:
+      title: "Unauthorized token error/ Missing API key"
+      type: object
+      properties:
+        error:
+          example: 
+            "The request did not include an authentication token or the authentication token was expired."

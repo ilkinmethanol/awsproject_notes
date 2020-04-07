@@ -1,0 +1,26 @@
+variables:
+  branch: $CI_COMMIT_BRANCH
+  commitid: $CI_COMMIT_SHA
+
+stages:
+  - build
+  - deploy
+  
+build:
+  stage: build
+  script:
+    - uname -r
+    - apt-get update -y
+    - apt-get install -y zip unzip jq python pip
+    - echo "Dependencies installed successfully"
+    - echo "Installing libraries"
+    - for d in $(ls -d */ | sed 's#/##'); do cd ${d}; if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt -t packages/ ; cd .. ; fi; done
+    - echo $branch
+    - for element in $(ls -d */ | sed 's#/##'); do cd "${element}/" ; zip -r "${element}.zip" $(ls); cd .. ; done
+    - echo "executed in $branch"
+    - echo "commitid is $commitid"
+    - echo "zip ok"
+    - packagename=`jq -r ".packagename" lambda-deployment.json`
+    - for element in $(ls -d */ | sed 's#/##'); do cd "$(element)/" ; echo "aws s3 cp" "${element}.zip" echo "../lambda-deployment.json" echo "s3://$packagename/$branch/" echo "s3://$packagename/$branch/$commitid --acl bucket-owner-full-control" ;done
+    - echo "Operation compleyed, on " $branch "and with commitid" $commitid " package name is" $packagename
+
